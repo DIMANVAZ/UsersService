@@ -1,12 +1,12 @@
 include head
 div(id="mainDiv")
     p Войдите в систему или зарегистрируйтесь, используя адрес эл.почты и пароль
-    form(action="/pass" enctype="application/x-www-form-urlencoded" method="POST" class="needs-validation")
+    form(id="mainForm" action="/pass" enctype="application/x-www-form-urlencoded" method="POST" class="needs-validation")
         label(class="form-label") Email-адрес
-        input(type="email" name="email" class="form-control" placeholder value='a@a.a' required)
+        input(id="form-email-input" type="email" name="email" class="form-control" placeholder value required)
         label(class="form-label") Пароль
-        input(type="password" name="password" class="form-control" placeholder value="user" required)
-        button(type="submit" class="btn btn-md btn-primary") Отправить
+        input(id="form-password-input" type="password" name="password" class="form-control" placeholder value required)
+        button(type="submit" class="btn btn-md btn-primary") Вход \ регистрация
 
     a(href='/adminLogon') Для админов
 
