@@ -1,0 +1,12 @@
+include head
+div(id="mainDiv")
+    p Войдите в админ-панель с паролем
+    form(action="/adminPanel" enctype="application/x-www-form-urlencoded" method="POST" class="needs-validation")
+        label(class="form-label") Пароль
+        input(type="password" name="password" class="form-control" placeholder value='admin' required)
+        button(type="submit" class="btn btn-md btn-primary") Отправить
+
+    style.
+        input,form{
+            margin-bottom: 10px;
+        }
