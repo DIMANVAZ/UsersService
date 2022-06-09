@@ -1,3 +1,26 @@
 include head
-div(id="mainDiv")
-    p Сырая админ-панель. Здесь будет CRUD юзеров...
+div(id="mainDiv" style="margin: 0 auto;")
+    h3 Юзеры (из базы данных)
+    table(class="table")
+        caption Статистика
+            tr
+                th(class="") id
+                th(class="") email
+                th(class="") PassHash
+                th(class="") Создан
+                th(class="") Обновлён
+            each elem in data
+                tr
+                    td(class="") #{elem.dataValues.id}
+                    td(class="") #{elem.dataValues.email}
+                    td(class="") #{elem.dataValues.passHash}
+                    td(class="") #{elem.dataValues.createdAt}
+                    td(class="") #{elem.dataValues.updatedAt}
+                    td(class="")
+                        a(href=`/delete/${elem.dataValues.email}`)
+                            button(class="w-100 btn btn-md btn-danger") Удалить
+
+                    //-
+                        form(action=`/delete/${elem.dataValues.email}` method="POST")
+                            button(class="w-100 btn btn-lg btn-danger" type="submit") Удалить
+                    //

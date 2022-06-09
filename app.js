@@ -2,6 +2,8 @@ const express = require('express');
 const exP = express();
 const {User} = require('./usersDB/dbConnector.js');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+require('dotenv').config()
 const port = process.env.PORT || 3000;
 
 (()=>{
@@ -17,14 +19,16 @@ exP.use(express.static('public'));
 exP.use(express.urlencoded({extended:false}));
 exP.use(express.json());
 exP.set('view engine','pug');
+exP.use(cookieParser());
 
-exP.get('/logon',(req,res) => {
-    res.render('logon');
+exP.get('/userLogon',(req,res) => {
+    res.render('userLogon');
 })
 
 //мидл-варя - для одминов и логина. Все "левые" адреса переправляет на окно логина
 const adminWays = ['/adminLogon','/adminPanel'];
-const realWays = ['/pass'];
+const delWay = '/delete/'+ new RegExp(/.+/);
+const realWays = ['/pass',];
 exP.use((req,res, next) => {
     const url = req.originalUrl;
     if(adminWays.includes(url)) {
@@ -32,25 +36,44 @@ exP.use((req,res, next) => {
     } else if (realWays.includes(url)){
         next();
     }
-    else res.render('logon');
+    else res.render('userLogon');
 })
 
 exP.get('/adminLogon',(req,res) => {
-    res.render('adminLogon');
+    if(req.cookies?.admin && req.cookies.admin === 'true'){
+
+        User.findAll().then(data => {
+            console.log(data);
+            res.render('adminPanel', {data})
+        });
+
+    }
+    else res.render('adminLogon');
 })
 
 exP.post('/adminPanel',(req,res) => {
     if (req.body.password === 'admin'){
-        //localStorage.setItem('UsersService','adminIsHere');
-        res.render('adminPanel');
-    }
+        res.setHeader('Set-Cookie', 'admin=true');
+
+        User.findAll().then(data => {
+            console.log(data);
+            res.render('adminPanel', {data})
+        });
+
+    } else res.redirect(301, '/adminLogon');
 })
 
 exP.get('/adminPanel',(req,res) => {
-    res.redirect(301, '/adminLogon');
+    if(req.cookies?.admin && req.cookies.admin === 'true'){
+
+        User.findAll().then(data => {
+            console.log(data);
+            res.render('adminPanel', {data})
+        });
+
+    }
+    else res.redirect(301, '/adminLogon');
 })
-
-
 
 // пропускной шлюз - логин или регистрация
 exP.post('/pass',(request,response) => {
@@ -58,9 +81,7 @@ exP.post('/pass',(request,response) => {
            Отправляем приветственное письмо (+ на экране покажэм уведомление).
         2. Если адрес в БД есть - сравниваем пароль.
            Совпало - шлём на Notes юзера (т.е. выкачиваем именную таблицу)
-           Не совпало - на экране покажэм уведомление - переменная notification.
-
-           */
+           Не совпало - на экране покажэм уведомление - переменная notification.  */
     const userEmail = request.body.email;
     const nakedPass = request.body.password;
     const passHash = bcrypt.hashSync(nakedPass, 5);
@@ -88,3 +109,6 @@ exP.post('/pass',(request,response) => {
     }).catch(e => console.log(e));
 
 })
+
+console.log(process.env.SECRET_KEY)
+
