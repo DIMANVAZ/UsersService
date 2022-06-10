@@ -3,7 +3,7 @@ const exP = express();
 const {User} = require('./usersDB/dbConnector.js');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-require('dotenv').config()
+require('dotenv').config();
 const port = process.env.PORT || 3000;
 
 (()=>{
@@ -25,28 +25,34 @@ exP.get('/userLogon',(req,res) => {
     res.render('userLogon');
 })
 
-//мидл-варя - для одминов и логина. Все "левые" адреса переправляет на окно логина
-const adminWays = ['/adminLogon','/adminPanel'];
-const delWay = '/delete/'+ new RegExp(/.+/);
-const realWays = ['/pass',];
+//мидл-варя - для одминов, логина и удалений. Все "левые" адреса переправляет на окно логина
+const delRoutes = /\/delete\/.+/gm;
+const realWays = ['/adminLogon','/adminPanel', '/pass', delRoutes ];
+
 exP.use((req,res, next) => {
     const url = req.originalUrl;
-    if(adminWays.includes(url)) {
-        next();
-    } else if (realWays.includes(url)){
-        next();
+    let match = false;
+
+    realWays.forEach(el => {
+        if(el === url || url.search(el) >-1){
+            match = true;
+            next();
+        }
+    })
+    if(!match){
+        res.render('userLogon')
     }
-    else res.render('userLogon');
 })
+
+function doAdminPanel(res){
+    User.findAll().then(data => {
+        res.render('adminPanel', {data})
+    });
+}
 
 exP.get('/adminLogon',(req,res) => {
     if(req.cookies?.admin && req.cookies.admin === 'true'){
-
-        User.findAll().then(data => {
-            console.log(data);
-            res.render('adminPanel', {data})
-        });
-
+        doAdminPanel(res);
     }
     else res.render('adminLogon');
 })
@@ -54,23 +60,13 @@ exP.get('/adminLogon',(req,res) => {
 exP.post('/adminPanel',(req,res) => {
     if (req.body.password === 'admin'){
         res.setHeader('Set-Cookie', 'admin=true');
-
-        User.findAll().then(data => {
-            console.log(data);
-            res.render('adminPanel', {data})
-        });
-
+        doAdminPanel(res);
     } else res.redirect(301, '/adminLogon');
 })
 
 exP.get('/adminPanel',(req,res) => {
     if(req.cookies?.admin && req.cookies.admin === 'true'){
-
-        User.findAll().then(data => {
-            console.log(data);
-            res.render('adminPanel', {data})
-        });
-
+        doAdminPanel(res);
     }
     else res.redirect(301, '/adminLogon');
 })
